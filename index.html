@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <form id="form" style="display: flex; gap: 10px;align-items: self-start">
+        <input type="text" id="prompt" required placeholder="Write You Question Here"
+            style="width: 100%;font-size: 15px; border: 1px solid lightgray; padding: 15px 20px; border-radius: 10px;box-sizing: border-box;">
+        <button type="submit"
+            style="width: 200px;font-size: 16px; cursor: pointer;;padding: 15px 0; text-align: center; border-radius: 10px; letter-spacing: 1px; color: white; background-color: rgb(37, 37, 37); font-weight: 700;border: none;">Generate</button>
+    </form>
+    <div
+        style="min-height: 200px;margin-top: 50px; width: 100%; border: 1px solid lightgray;border-radius: 10px; box-sizing: border-box;">
+        <div
+            style="width: 100%;padding: 20px;box-sizing: border-box;font-family: sans-serif;min-height: 200px;display: flex;justify-content: center; align-items: center">
+            <h1 id="ask_question">Ask Question</h1>
+            <!-- <p id="dataContainer"></p> -->
+            <textarea name="" disabled id="dataContainer" cols="30" rows="10"
+                style="height: 450px;width: 100%;border: none;background-color: transparent;resize: none;font-size: 16px; word-spacing: 4px;display: none;"></textarea>
+            <h1 id="error" style="display: none;">Error in generating answer</h1>
+            <div id="loader" style="line-height: 7px; display: none;">
+                <h2>
+                    Generating Answer .....
+                </h2>
+                <p style="font-size: 14px; color: rgb(52, 52, 52);">This may take a while.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showLoader() {
+            document.getElementById("loader").style.display = "block";
+        }
+
+        function hideLoader() {
+            document.getElementById("loader").style.display = "none";
+        }
+
+        document.getElementById('form').addEventListener('submit', (e) => {
+            e.preventDefault()
+            document.getElementById("dataContainer").style.display = 'none'
+            document.getElementById('ask_question').style.display = 'none'
+            document.getElementById('error').style.display = 'none'
+            showLoader();
+            const prompt = document.getElementById('prompt')
+            const finalPrompt = `${prompt.value}. write a detailed note on it.`
+            fetch('https://api.openai.com/v1/completions', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer token`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: 'text-davinci-003',
+                    prompt: finalPrompt,
+                    max_tokens: 3500,
+                    n: 1
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if(!data.choices[0].text){
+                       throw new Error('error') 
+                    }
+                    document.getElementById("dataContainer").style.display = 'block'
+                    document.getElementById("dataContainer").value = data.choices[0].text.trimStart();
+                })
+                .catch(error => {
+                    console.log('Error fetching data:', error);
+                    document.getElementById('error').style.display = 'block'
+                })
+                .finally(() => {
+                    hideLoader()
+                });
+        })
+
+    </script>
+</body>
+
+</html>
